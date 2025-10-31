@@ -1,0 +1,47 @@
+name: Code Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci || npm i
+      - run: npm run build
+      - run: npm test
+      - run: npm run selftest
+      - run: npm link
+      - name: Analyze (Markdown)
+        run: code-audit analyze . --format md --out audit.md --fail-on error
+      - name: Duplicates
+        run: |
+          set +e
+          code-audit dup . --out duplicates.json
+          echo "dup_exit=$?" >> $GITHUB_ENV
+          set -e
+      - name: Graph
+        run: code-audit graph . --out import-graph.dot
+      - name: Grade
+        run: code-audit grade . --out grade.json
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-artifacts
+          path: |
+            audit.md
+            duplicates.json
+            import-graph.dot
+            import-graph.clusters.json
+            grade.json
+      - name: Fail on duplicates
+        if: env.dup_exit != '0'
+        run: |
+          echo "Exact duplicate functions detected"
+          exit 1

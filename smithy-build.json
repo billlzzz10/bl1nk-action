@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "sources": ["models"],
+  "plugins": {
+    "typescript-client-codegen": {
+      "package": "@smithy/code-audit-ts-client",
+      "packageVersion": "1.1.0"
+    }
+  }
+}

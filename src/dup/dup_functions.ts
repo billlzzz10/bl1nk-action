@@ -1,4 +1,4 @@
-import { Project, FunctionDeclaration, MethodDeclaration, ArrowFunction, Node } from "ts-morph";
+import { Project, FunctionDeclaration, MethodDeclaration, ArrowFunction, Node, SyntaxKind } from "ts-morph";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
 
@@ -7,19 +7,18 @@ import * as crypto from "node:crypto";
  *  - ลบคอมเมนต์ เว้นวรรค
  *  - เก็บเฉพาะโครงสร้างและลำดับ token สำคัญ
  */
-function normalizedHash(n: Node): string {
-  const text = n.getText();
+function normalizedHash(n: FunctionDeclaration | MethodDeclaration | ArrowFunction): string {
+  const body = n.getBody();
+  if (!body) return "";
+
+  const text = body.getText();
   const noComments = text.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
-  // ลบชื่อและไอดีที่เปลี่ยนชื่อได้
   const noIds = noComments
-    .replace(/\bfunction\s+[A-Za-z0-9_]+\s*/g, "function ")
-    .replace(/\bclass\s+[A-Za-z0-9_]+\s*/g, "class ")
     .replace(/\b[A-Za-z_]\w*\b/g, (m) => {
-      // คงคีย์เวิร์ดหลัก
-      if (/^(if|else|for|while|switch|case|return|await|async|try|catch|finally|throw|new|in|of|typeof|instanceof|break|continue|yield|const|let|var|function|class|this|super)$/.test(m)) {
+      if (/^(if|else|for|while|switch|case|return|await|async|try|catch|finally|throw|new|in|of|typeof|instanceof|break|continue|yield|const|let|var|this|super)$/.test(m)) {
         return m;
       }
-      return "_"; // normalize identifiers
+      return "_";
     })
     .replace(/\s+/g, " ")
     .trim();
@@ -37,11 +36,11 @@ export function findExactDuplicateFunctions(root: string): DuplicateGroup[] {
   const buckets = new Map<string, Array<{ file: string; name: string; line: number }>>();
 
   for (const sf of project.getSourceFiles()) {
-    const funcs: Node[] = [
+    const funcs = [
       ...sf.getFunctions(),
-      ...sf.getDescendantsOfKind(arrowKind()),
-      ...sf.getDescendantsOfKind(methodKind())
-    ] as unknown as Node[];
+      ...sf.getDescendantsOfKind(SyntaxKind.ArrowFunction),
+      ...sf.getDescendantsOfKind(SyntaxKind.MethodDeclaration)
+    ];
 
     for (const fn of funcs) {
       const hash = normalizedHash(fn);

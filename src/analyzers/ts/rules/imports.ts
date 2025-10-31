@@ -1,32 +1,47 @@
 import { RuleContext, RuleResult, Evidence } from "@/types/rules";
-import * as fs from "node:fs/promises";
+import { Project, SyntaxKind } from "ts-morph";
 import * as path from "node:path";
 
 export async function ruleTsImportGroups(ctx: RuleContext): Promise<RuleResult> {
+  const project = new Project({
+    tsConfigFilePath: path.join(ctx.rootDir, "tsconfig.json"),
+    skipAddingFilesFromTsConfig: false,
+  });
+
   const evidence: Evidence[] = [];
-  const src = path.join(ctx.rootDir, "src");
-  // heuristic: ต้องมี absolute import เริ่มด้วย "@/"; แจ้งเตือนถ้าไฟล์ไม่มีเลย
-  async function checkFile(p: string) {
-    const text = await fs.readFile(p, "utf8");
-    const lines = text.split("\n");
-    const hasAbs = lines.some(l => /^import .+ from ["']@\/.+["']/.test(l));
-    if (!hasAbs && /import .+ from ["']\.\.?\//.test(text)) {
-      evidence.push({ file: p, note: "use absolute imports with @/ path mapping" });
+
+  for (const sourceFile of project.getSourceFiles()) {
+    // We only care about files in the src directory for this rule
+    if (!sourceFile.getFilePath().startsWith(path.join(ctx.rootDir, "src"))) {
+      continue;
+    }
+
+    const importDeclarations = sourceFile.getImportDeclarations();
+    let hasRelativeImport = false;
+    let hasAbsoluteImport = false;
+
+    for (const importDeclaration of importDeclarations) {
+      const moduleSpecifier = importDeclaration.getModuleSpecifierValue();
+      if (moduleSpecifier.startsWith("@/")) {
+        hasAbsoluteImport = true;
+      } else if (moduleSpecifier.startsWith("./") || moduleSpecifier.startsWith("../")) {
+        hasRelativeImport = true;
+      }
+    }
+
+    if (hasRelativeImport && !hasAbsoluteImport) {
+      const line = importDeclarations[0]?.getStartLineNumber();
+      const evidenceEntry: Evidence = {
+        file: sourceFile.getFilePath(),
+        note: "File contains relative imports but no absolute imports using '@/'. Prefer absolute imports for better readability and maintenance.",
+      };
+      if (line) {
+        evidenceEntry.line = line;
+      }
+      evidence.push(evidenceEntry);
     }
   }
-  async function walk(dir: string): Promise<void> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const e of entries) {
-      const p = path.join(dir, e.name);
-      if (e.isDirectory()) await walk(p);
-      else if (p.endsWith(".ts") || p.endsWith(".tsx")) await checkFile(p);
-    }
-  }
-  try {
-    await walk(src);
-  } catch {
-    // ignore if no src folder
-  }
+
   const passed = evidence.length === 0;
   return {
     id: "ts.import.groups",
@@ -35,6 +50,6 @@ export async function ruleTsImportGroups(ctx: RuleContext): Promise<RuleResult> 
     severity: passed ? "info" : "warn",
     passed,
     evidence,
-    fix: "Configure tsconfig paths to @/* and group imports by source"
+    fix: "Configure tsconfig paths to @/* and use absolute imports for modules inside the src directory."
   };
 }
