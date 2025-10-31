@@ -7,10 +7,14 @@
     "build": "tsc -p .",
     "dev": "tsx src/cli/main.ts",
     "start": "node dist/cli/main.js",
-    "analyze": "code-audit analyze . --lang ts --format md --out audit.md --fail-on error",
+    "analyze": "code-audit analyze . --format md --out audit.md --fail-on error",
     "graph": "code-audit graph . --out import-graph.dot",
     "dup": "code-audit dup . --out duplicates.json",
-    "grade": "code-audit grade . --out grade.json"
+    "grade": "code-audit grade . --out grade.json",
+    "badge": "tsx scripts/badge.ts",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "selftest": "tsx src/selfcheck/run.ts"
   },
   "dependencies": {
     "commander": "^12.1.0",
@@ -18,12 +22,8 @@
   },
   "devDependencies": {
     "tsx": "^4.19.0",
-    "typescript": "^5.6.3"
-  }
-}
-
-{
-  "scripts": {
-    "badge": "tsx scripts/badge.ts"
+    "typescript": "^5.6.3",
+    "@types/node": "^22.8.1",
+    "vitest": "^2.1.3"
   }
 }

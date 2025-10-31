@@ -1,5 +1,5 @@
 import { RuleContext, RuleResult, Evidence } from "@/types/rules";
-import { Project, CatchClause } from "ts-morph";
+import { Project, Node, CatchClause } from "ts-morph";
 import * as path from "node:path";
 
 export async function ruleTsErrorSpecific(ctx: RuleContext): Promise<RuleResult> {
@@ -9,7 +9,7 @@ export async function ruleTsErrorSpecific(ctx: RuleContext): Promise<RuleResult>
   });
   const evidence: Evidence[] = [];
   for (const sf of project.getSourceFiles()) {
-    const catches = sf.getDescendantsOfKind(233 /* SyntaxKind.CatchClause */) as CatchClause[];
+    const catches = sf.getDescendants().filter(Node.isCatchClause);
     for (const c of catches) {
       const varName = c.getVariableDeclaration()?.getName() ?? "e";
       const body = c.getBlock().getText();
