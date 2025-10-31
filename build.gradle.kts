@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    val smithyVersion: String by project
+    val smithyVersion = "1.51.0"
 
     smithyCli("software.amazon.smithy:smithy-cli:$smithyVersion")
 
