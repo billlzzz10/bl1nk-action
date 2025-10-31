@@ -6,7 +6,7 @@ Our goal is to create a robust and reliable tool by ensuring that all functional
 
 ## The Core Principle: The Model is the Law
 
-The central tenant of our architecture is that the **Smithy model is the ultimate source of truth**. Our codebase (`the core`) exists to implement the contract defined in this model (`the shell`).
+The central tenet of our architecture is that the **Smithy model is the ultimate source of truth**. Our codebase (`the core`) exists to implement the contract defined in this model (`the shell`).
 
 -   **`models/code-audit.smithy`**: This file is our formal contract. It defines the `CodeAuditTs` service, its operations (our "Tools"), and the precise structure of their inputs and outputs. It is the law.
 -   **TypeScript Implementation**: Our source code in `src/` is the "good faith" implementation of the contract defined in the Smithy model.
