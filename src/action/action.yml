@@ -1,0 +1,36 @@
+name: "Code Audit TS"
+description: "Static audit + grade + graph + duplicates"
+author: "team@bl1nk.site"
+branding:
+  color: "blue"
+  icon: "shield"
+inputs:
+  path:
+    description: "Root path"
+    default: "."
+  fail-on:
+    description: "none|warn|error"
+    default: "error"
+  format:
+    description: "md|json"
+    default: "md"
+outputs:
+  grade: { description: "Letter grade" }
+  score: { description: "Numeric score" }
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: npm ci
+    - shell: bash
+      run: npm run build
+    - shell: bash
+      run: npm link
+    - shell: bash
+      run: |
+        code-audit analyze "${{ inputs.path }}" --format ${{ inputs.format }} --fail-on ${{ inputs.fail-on }} --out audit.md
+        code-audit grade "${{ inputs.path }}" --out grade.json
+        SCORE=$(jq -r '.score' grade.json)
+        GRADE=$(jq -r '.grade' grade.json)
+        echo "score=$SCORE" >> $GITHUB_OUTPUT
+        echo "grade=$GRADE" >> $GITHUB_OUTPUT
