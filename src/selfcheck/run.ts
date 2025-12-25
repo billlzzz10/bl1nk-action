@@ -9,7 +9,7 @@ async function main() {
   // กำหนด root เป็นโฟลเดอร์ของ action นี้โดยเฉพาะ (ไม่ใช่ cwd ของผู้เรียก)
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const root = path.resolve(__dirname, ".."); // ชี้ไปที่ /actions/code-audit-ts/
+  const root = path.resolve(__dirname, "../.."); // ชี้ไปที่ /actions/code-audit-ts/
 
   console.log(`Running self-check on: ${root}`);
 
