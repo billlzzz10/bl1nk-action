@@ -217,7 +217,12 @@ class TaskPlannerAgent:
         if not task:
             return None
         
-        task.status = TaskStatus(status)
+        try:
+            task.status = TaskStatus(status)
+        except ValueError:
+            logger.error(f"Invalid status value: {status}")
+            return None
+            
         task.updated_at = datetime.now().isoformat()
         
         if status == TaskStatus.COMPLETED.value:
