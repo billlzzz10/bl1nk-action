@@ -6,7 +6,7 @@ created_at: 2025-10-31
 updated_at: 2025-12-17
 ---
 
-# roportory structure
+# Repository Structure
 
 ```
 code-audit-ts/
