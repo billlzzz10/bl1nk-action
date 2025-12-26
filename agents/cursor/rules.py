@@ -17,7 +17,12 @@ class Rule:
 class CursorRulesEngine:
     """Rule engine for code patterns"""
     
-    DEFAULT_RULES = [
+from typing import ClassVar
+
+class CursorRulesEngine:
+    """Rule engine for code patterns"""
+    
+    DEFAULT_RULES: ClassVar[list[Rule]] = [
         Rule(
             name="snake_case_functions",
             description="Function names should be snake_case",
