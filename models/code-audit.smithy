@@ -23,7 +23,6 @@ structure AnalyzeInput {
     root: String,
 
     @documentation("The output format for the report.")
-    @optional
     format: ReportFormat = "md",
 
     @documentation("The path to the output file.")
