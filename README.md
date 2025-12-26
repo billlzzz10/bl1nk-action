@@ -4,7 +4,7 @@
   <img src="./badges/grade.svg" alt="Audit Grade"/>
   <img src="https://img.shields.io/github/v/release/billlzzz10/code-audit-ts?label=Version" alt="GitHub Release"/>
   <img src="https://img.shields.io/github/license/billlzzz10/code-audit-ts" alt="License"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/billlzzz10/code-aud
+  <img src="https://img.shields.io/github/actions/workflow/status/billlzzz10/code-audit-ts/ci.yml?branch=main" alt="CI Status"/>
 </p>
 
 ## Table of Contents
