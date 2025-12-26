@@ -382,12 +382,16 @@ class TaskPlannerAgent:
         
         Respond in a helpful, structured way. When suggesting tasks, include estimated effort."""
         
-        response = self.anthropic.messages.create(
-            model=self.model,
-            max_tokens=1000,
-            system=system_prompt,
-            messages=self.conversation_history
-        )
+        try:
+            response = self.anthropic.messages.create(
+                model=self.model,
+                max_tokens=1000,
+                system=system_prompt,
+                messages=self.conversation_history
+            )
+        except Exception as e:
+            logger.error(f"Anthropic API call failed: {e}")
+            return f"Sorry, I encountered an error: {str(e)}"
         
         assistant_message = response.content[0].text
         
