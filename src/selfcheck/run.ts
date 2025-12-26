@@ -36,7 +36,7 @@ async function main() {
   }
 
   console.log("✅ Self-check passed successfully!");
-  console.log(`   Grade: ${g.letter} (${g.score}/100)`);
+  console.log(`   Grade: ${g.grade} (${g.score}/100)`);
 }
 
 main().catch((err) => {
