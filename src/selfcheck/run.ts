@@ -3,21 +3,44 @@ import { grade } from "@/core/reporter/grade";
 import { buildImportGraph } from "@/arch/import_graph";
 import { findExactDuplicateFunctions } from "@/dup/dup_functions";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 async function main() {
-  const root = path.resolve(process.cwd());
+  // กำหนด root เป็นโฟลเดอร์ของ action นี้โดยเฉพาะ (ไม่ใช่ cwd ของผู้เรียก)
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const root = path.resolve(__dirname, "../.."); // ชี้ไปที่ /actions/code-audit-ts/
+
+  console.log(`Running self-check on: ${root}`);
+
   const report = await runAnalyze(root);
   const g = grade(report);
   const graph = buildImportGraph(root);
   const dups = findExactDuplicateFunctions(root);
 
-  // Invariants แบบควันหลวง
-  if (!report.version) throw new Error("report missing version");
-  if (g.score < 0 || g.score > 100) throw new Error("grade score out of range");
-  if (!Array.isArray(graph.nodes)) throw new Error("graph invalid");
-  if (!Array.isArray(dups)) throw new Error("dups invalid");
+  // Invariants validation
+  if (!report.version || typeof report.version !== "string") {
+    throw new Error("Report is missing valid 'version' field");
+  }
 
-  console.log("Selfcheck OK");
+  if (typeof g.score !== "number" || g.score < 0 || g.score > 100) {
+    throw new Error(`Invalid grade score: ${g.score} (must be 0–100)`);
+  }
+
+  if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) {
+    throw new Error("Import graph structure is invalid");
+  }
+
+  if (!Array.isArray(dups)) {
+    throw new Error("Duplicates result must be an array");
+  }
+
+  console.log("✅ Self-check passed successfully!");
+  console.log(`   Grade: ${g.grade} (${g.score}/100)`);
 }
 
-main().catch((e) => { console.error(e); process.exit(2); });
+main().catch((err) => {
+  console.error("❌ Self-check failed:");
+  console.error(err);
+  process.exit(2);
+});
