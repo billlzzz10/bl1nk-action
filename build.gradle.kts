@@ -8,9 +8,9 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    val smithyVersion = "1.51.0"
+val smithyVersion by extra("1.51.0")
 
+dependencies {
     smithyCli("software.amazon.smithy:smithy-cli:$smithyVersion")
 
     // Add the Smithy TypeScript code generator dependency
